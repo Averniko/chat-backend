@@ -1,0 +1,11 @@
+aiohttp
+async-timeout
+attrs
+chardet
+idna
+multidict
+typing-extensions
+websockets
+yarl
+PyJWT
+motor
