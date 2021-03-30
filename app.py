@@ -1,9 +1,6 @@
-import asyncio
 from aiohttp import web
-from motor import motor_asyncio
-
-from src.routes import routes
 from src.middlewares import db_handler, authorize
+from src.routes import routes
 from src.settings import *
 
 
@@ -23,8 +20,8 @@ async def init():
     app.add_routes(routes)
 
     # db
-    app.client = motor_asyncio.AsyncIOMotorClient(MONGO_HOST)
-    app.db = app.client[MONGO_DB_NAME]
+    app.client = DB_CLIENT
+    app.db = DB
 
     app.on_shutdown.append(on_shutdown)
 

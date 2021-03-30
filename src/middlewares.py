@@ -1,7 +1,8 @@
-from aiohttp import web
-from .settings import *
 import jwt
+from aiohttp import web
+
 from src.auth import User
+from .settings import *
 
 
 async def db_handler(app, handler):

@@ -1,9 +1,9 @@
 from datetime import datetime
+
 from src.settings import MESSAGE_COLLECTION
 
 
 class Message:
-
     def __init__(self, db, user=None, text=None, **kwargs):
         self.collection = db[MESSAGE_COLLECTION]
         self.user = user

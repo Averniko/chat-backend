@@ -1,4 +1,5 @@
 from os import environ
+from motor import motor_asyncio
 
 DEBUG = environ.get('DEBUG', False)
 
@@ -12,3 +13,6 @@ MONGO_DB_PASSWORD = environ.get('MONGO_DB_PASSWORD', 'pass')
 
 MESSAGE_COLLECTION = 'messages'
 USER_COLLECTION = 'users'
+
+DB_CLIENT = motor_asyncio.AsyncIOMotorClient(MONGO_HOST)
+DB = DB_CLIENT[MONGO_DB_NAME]
