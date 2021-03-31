@@ -29,3 +29,10 @@ class Message:
         messages = Message.messages.find({'from': first_login, 'to': second_login},
                                          {'from': second_login, 'to': first_login}).sort([('time', 1)])
         return await messages.to_list(length=None)
+
+    @staticmethod
+    async def get_last_message(first_login, second_login):
+        message = await Message.messages.find_one(
+            {'$or': [{'from': first_login, 'to': second_login}, {'from': second_login, 'to': first_login}]},
+            sort=[('time', 1)])
+        return message

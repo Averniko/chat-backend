@@ -4,6 +4,7 @@ import jwt
 from aiohttp import web
 
 from src.auth import User
+from src.chat import Message
 from src.settings import *
 
 
@@ -11,7 +12,15 @@ class Contacts(web.View):
     async def get(self):
         user = self.request.get('user')
         contacts = user.contacts
-        return web.Response(content_type='application/json', text=json.dumps({'contacts': contacts}, default=str))
+        dialogs = []
+        for contact in contacts:
+            message = await Message.get_last_message(user.login, contact)
+            dialog = {
+                'login': contact,
+                'lastMessage': message['text'] if message else None
+            }
+            dialogs.append(dialog)
+        return web.Response(content_type='application/json', text=json.dumps({'dialogs': dialogs}, default=str))
 
 
 class AddContact(web.View):
