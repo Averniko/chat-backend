@@ -5,8 +5,10 @@ import json
 
 class Messages(web.View):
     async def get(self):
-        messages = Message().get_messages()
-        return web.Response(content_type='application/json', text=json.dumps({'messages': messages}))
+        query = self.request.query
+        login_to = query.get('login')
+        messages = await Message.get_dialog(first_login=self.request['user'].login, second_login=login_to)
+        return web.Response(content_type='application/json', text=json.dumps({'messages': messages}, default=str))
 
 
 class SendMessage(web.View):
@@ -17,7 +19,7 @@ class SendMessage(web.View):
         user = self.request.get('user')
         if text is None or to_login is None or user.login is None:
             return web.Response(status=400)
-        message = await Message(text=text, from_login=user.login, to_login=to_login).save()
+        message = await Message(text=text, from_login=user.login, to_login=to_login).create()
 
         for ws in self.request.app['websockets']:
             ws.send_str(json.dumps(
@@ -27,6 +29,7 @@ class SendMessage(web.View):
                         'text': message.text
                     }
                 }))
+        return web.Response(status=200)
 
 
 class WebSocket(web.View):

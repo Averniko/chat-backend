@@ -11,8 +11,8 @@ class Message:
         self.to_login = to_login
         self.text = text
 
-    async def save(self, **kwargs):
-        result = await self.messages.insert({
+    async def create(self, **kwargs):
+        result = await Message.messages.insert_one({
             'from': self.from_login,
             'to': self.to_login,
             'text': self.text,
@@ -24,7 +24,7 @@ class Message:
         messages = self.messages.find({}).sort([('time', 1)])
         return await messages.to_list(length=None)
 
-    async def get_dialog(self, first_login, second_login):
-        messages = self.messages.find({'from': first_login, 'to': second_login},
-                                      {'from': second_login, 'to': first_login}).sort([('time', 1)])
+    @staticmethod
+    async def get_dialog(first_login, second_login):
+        messages = Message.messages.find({'from': first_login, 'to': second_login}, {'from': second_login, 'to': first_login}).sort([('time', 1)])
         return await messages.to_list(length=None)

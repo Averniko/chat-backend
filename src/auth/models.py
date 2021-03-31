@@ -4,23 +4,30 @@ from src.settings import USER_COLLECTION, DB
 class User:
     users = DB[USER_COLLECTION]
 
-    def __init__(self, data):
-        self.login = data.get('login', None)
-        self.password = data.get('password', None)
+    def __init__(self, login: str, password: str = None):
+        self._id = None
+        self.login = login
+        self.password = password
 
     async def find_user(self):
         if self.login is None:
             return None
-        return await User.users.find_one({'login': self.login})
+        result = await User.users.find_one({'login': self.login})
+        if result:
+            self._id = result['_id']
+            return self
+        else:
+            return None
 
     async def auth_user(self):
         result = await User.users.find_one({'login': self.login, 'password': self.password})
         return bool(result)
 
-    async def create_user(self):
+    async def create(self):
         user = await self.find_user()
         if user:
             return user, False
         else:
-            user = await User.users.insert_one({'login': self.login, 'password': self.password})
-            return user, True
+            result = await User.users.insert_one({'login': self.login, 'password': self.password})
+            self._id = result.inserted_id
+            return self, True

@@ -10,13 +10,20 @@ from src.settings import *
 class Login(web.View):
     async def post(self, **kwargs):
         data = await self.request.json()
-        user = User(data)
-        is_user_auth = await user.auth_user()
-        if is_user_auth:
+        login = data.get('login')
+        password = data.get('password')
+        user = User(login=login, password=password)
+        user, is_created = await user.create()
+        if is_created:
             token = jwt.encode({"login": user.login}, SECRET_KEY, algorithm='HS256')
             return web.Response(content_type='application/json', text=json.dumps({'Token': token}))
         else:
-            return web.Response(status=401)
+            is_user_auth = await user.auth_user()
+            if is_user_auth:
+                token = jwt.encode({"login": user.login}, SECRET_KEY, algorithm='HS256')
+                return web.Response(content_type='application/json', text=json.dumps({'Token': token}))
+            else:
+                return web.Response(status=401)
 
 
 class Register(web.View):

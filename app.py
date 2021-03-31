@@ -2,6 +2,7 @@ from aiohttp import web
 from src.middlewares import db_handler, authorize
 from src.routes import routes
 from src.settings import *
+from aiohttp_middlewares import cors_middleware
 
 
 async def on_shutdown(app):
@@ -11,6 +12,7 @@ async def on_shutdown(app):
 
 async def init():
     app = web.Application(middlewares=[
+        cors_middleware(allow_all=True),
         authorize,
         db_handler,
     ])
