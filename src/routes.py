@@ -10,6 +10,6 @@ routes = [
     # post('/api/logout', LogOut, name='logout'),
     post('/api/message/send', SendMessage, name='sendMessage'),
     get('/api/messages', Messages, name='messages'),
-    get('/api/contacts', Contacts, name='contacts'),
+    get('/api/dialogs', Contacts, name='contacts'),
     post('/api/contact/add', AddContact, name='addContact')
 ]

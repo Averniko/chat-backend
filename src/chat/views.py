@@ -34,8 +34,11 @@ class SendMessage(web.View):
 
 class WebSocket(web.View):
     async def get(self):
+        query = self.request.query
+        login_to = query.get('login')
         ws = web.WebSocketResponse()
         await ws.prepare(self.request)
+
 
         self.request.app['websockets'].append(ws)
 
