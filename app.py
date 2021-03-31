@@ -6,7 +6,7 @@ from aiohttp_middlewares import cors_middleware
 
 
 async def on_shutdown(app):
-    for ws in app['websockets']:
+    for ws in app['websockets'].values():
         await ws.close(code=1001, message='Server shutdown')
 
 
@@ -16,7 +16,7 @@ async def init():
         authorize,
         db_handler,
     ])
-    app['websockets'] = []
+    app['websockets'] = {}
 
     # routes
     app.add_routes(routes)

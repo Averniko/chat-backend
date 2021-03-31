@@ -1,6 +1,11 @@
+import jwt
 from aiohttp import web, WSMsgType
+
+from src.auth import User
 from src.chat import Message
 import json
+
+from src.settings import SECRET_KEY
 
 
 class Messages(web.View):
@@ -21,7 +26,8 @@ class SendMessage(web.View):
             return web.Response(status=400)
         message = await Message(text=text, from_login=user.login, to_login=to_login).create()
 
-        for ws in self.request.app['websockets']:
+        ws = self.request.app['websockets'].get(to_login)
+        if ws:
             ws.send_str(json.dumps(
                 {
                     'message': {
@@ -35,17 +41,26 @@ class SendMessage(web.View):
 class WebSocket(web.View):
     async def get(self):
         query = self.request.query
-        login_to = query.get('login')
+        token = query.get('token')
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        login = payload.get('login', None)
+        user = await User(login=login).find_user()
+        if user is None:
+            web.Response(status=400)
+        socket = self.request.app['websockets'].get(user.login, None)
+        if socket:
+            await socket.close()
+
         ws = web.WebSocketResponse()
         await ws.prepare(self.request)
 
-
-        self.request.app['websockets'].append(ws)
+        self.request.app['websockets'][user.login] = ws
 
         async for msg in ws:
             if msg.tp == WSMsgType.text:
                 if msg.data == 'close':
                     await ws.close()
+                    self.request.app['websockets'][user.login] = None
 
         # self.request.app['websockets'].remove(ws)
         # for _ws in self.request.app['websockets']:
