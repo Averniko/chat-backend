@@ -26,5 +26,6 @@ class Message:
 
     @staticmethod
     async def get_dialog(first_login, second_login):
-        messages = Message.messages.find({'from': first_login, 'to': second_login}, {'from': second_login, 'to': first_login}).sort([('time', 1)])
+        messages = Message.messages.find({'from': first_login, 'to': second_login},
+                                         {'from': second_login, 'to': first_login}).sort([('time', 1)])
         return await messages.to_list(length=None)

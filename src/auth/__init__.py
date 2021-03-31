@@ -1,2 +1,2 @@
 from .models import User
-from .views import Login, Register, LogOut
+from .views import Login, LogOut, Contacts, AddContact

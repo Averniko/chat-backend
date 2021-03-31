@@ -7,6 +7,27 @@ from src.auth import User
 from src.settings import *
 
 
+class Contacts(web.View):
+    async def get(self):
+        user = self.request.get('user')
+        contacts = user.contacts
+        return web.Response(content_type='application/json', text=json.dumps({'contacts': contacts}, default=str))
+
+
+class AddContact(web.View):
+    async def post(self):
+        data = await self.request.json()
+        user = self.request.get('user')
+        contact_login = data.get('login')
+        contact = await User(login=contact_login).find_user()
+        if contact:
+            await user.add_contact(contact)
+            await contact.add_contact(user)
+            return web.Response(status=200)
+        else:
+            return web.Response(status=400)
+
+
 class Login(web.View):
     async def post(self, **kwargs):
         data = await self.request.json()
@@ -24,18 +45,6 @@ class Login(web.View):
                 return web.Response(content_type='application/json', text=json.dumps({'Token': token}))
             else:
                 return web.Response(status=401)
-
-
-class Register(web.View):
-    async def post(self, **kwargs):
-        data = await self.request.json()
-        user = User(data)
-        user, is_created = await user.create_user()
-        if is_created:
-            token = jwt.encode({"login": user.login}, SECRET_KEY, algorithm='HS256')
-            return web.Response(content_type='application/json', text=json.dumps({'Token': token}))
-        else:
-            return web.Response(content_type='application/json', text=json.dumps({'error': 'User already exists'}))
 
 
 class LogOut(web.View):
