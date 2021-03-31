@@ -20,14 +20,14 @@ async def authorize(app, handler):
             response = await handler(request)
             return response
         # TODO
-        auth = request.headers['Authorization']
-        token = auth.split(' ')[1]
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user = User(request.db, payload).find_user()
-        if user:
-            request.user = user
-            return handler(request)
-        else:
-            raise web.HTTPUnauthorized
+        auth = request.headers.get('Authorization', None)
+        if auth:
+            token = auth.split(' ')[1]
+            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            user = User(payload).find_user()
+            if user:
+                request['user'] = user
+                return handler(request)
+        raise web.HTTPUnauthorized
 
     return middleware

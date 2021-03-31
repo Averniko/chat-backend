@@ -5,22 +5,25 @@ import json
 
 class Messages(web.View):
     async def get(self):
-        messages = Message(self.request.db).get_messages()
+        messages = Message().get_messages()
         return web.Response(content_type='application/json', text=json.dumps({'messages': messages}))
 
 
 class SendMessage(web.View):
     async def post(self):
         data = await self.request.json()
-        text = data.get('text')
-        user = self.request.user
-        message = await Message(self.request.db, text=text, user=user).save()
+        text = data.get('text', None)
+        to_login = data.get('to', None)
+        user = self.request.get('user')
+        if text is None or to_login is None or user.login is None:
+            return web.Response(status=400)
+        message = await Message(text=text, from_login=user.login, to_login=to_login).save()
 
         for ws in self.request.app['websockets']:
             ws.send_str(json.dumps(
                 {
                     'message': {
-                        'user': user.login,
+                        'from': user.login,
                         'text': message.text
                     }
                 }))
