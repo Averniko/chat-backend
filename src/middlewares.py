@@ -23,7 +23,10 @@ async def authorize(app, handler):
         auth = request.headers.get('Authorization', None)
         if auth:
             token = auth.split(' ')[1]
-            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            try:
+                payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            except jwt.exceptions.DecodeError:
+                raise web.HTTPUnauthorized
             login = payload.get('login')
             user = await User(login=login).find_user()
             if user:
